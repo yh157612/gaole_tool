@@ -60,7 +60,7 @@ const diskOrders = [
     'L雷公',
     's1尼多朗',
     's2甲殼龍',
-    's3謎擬Q',
+    'L謎擬Q',
     's2伊布',
     's3大比鳥',
     's1尼多蘭',
@@ -137,7 +137,7 @@ const diskOrders = [
     's2妙蛙草',
     'L炎帝',
     's1尼多朗',
-    's3謎擬Q',
+    'L謎擬Q',
     's2比比鳥',
     's1種子鐵球',
     's3伊布',
@@ -166,7 +166,7 @@ const diskOrders = [
     's1海豹球',
     's1種子鐵球',
     's2堅果啞鈴',
-    '路奈亞拉',
+    '露奈雅拉',
     's1尼多朗',
     'L水君',
     's2甲殼龍',
@@ -197,7 +197,7 @@ const diskOrders = [
     's3堅果啞鈴',
     's1傑尼龜',
     's4火伊布',
-    's3謎擬Q',
+    'L謎擬Q',
     's2尼多娜',
     's3帝牙海獅',
     's2比比鳥',
@@ -230,7 +230,7 @@ const diskOrders = [
     's2大岩蛇',
     's2斧牙龍',
     's3大鋼蛇',
-    's3謎擬Q',
+    'L謎擬Q',
     's2火恐龍',
     's1妙蛙種子',
     's2尼多娜',
@@ -298,7 +298,7 @@ const diskOrders = [
     's2尼多利諾',
     's3尼多后',
     's2火恐龍',
-    's3謎擬Q',
+    'L謎擬Q',
     's2卡咪龜',
     's1妙蛙種子',
     's1波波',
@@ -335,7 +335,7 @@ const diskOrders = [
     's1波波',
     's1寶貝龍',
     's2大岩蛇',
-    's3謎擬Q',
+    'L謎擬Q',
     'L噴火龍',
     's4雙斧戰龍',
     's1波波',
@@ -420,11 +420,87 @@ const diskOrders = [
   ],
 ];
 
+const markables = [
+  // 5-star
+  [
+    '超夢',
+    '拉帝亞斯',
+    '拉帝歐斯',
+    '達克萊伊',
+    '基格爾德',
+    '索爾迦雷歐',
+    '露奈雅拉',
+    '惡食大王',
+    '四顎針龍',
+    'L噴火龍',
+    'L阿爾宙斯',
+    'L甲賀忍蛙',
+  ],
+
+  // 4-star
+  [
+    's4妙蛙花',
+    's4噴火龍',
+    's4水箭龜',
+    's4帝牙海獅',
+    's4大比鳥',
+    's4雙斧戰龍',
+    's4尼多后',
+    's4尼多王',
+    's4水伊布',
+    's4雷伊布',
+    's4火伊布',
+    's4皮卡丘',
+    's4暴飛龍',
+    's4爆焰龜獸',
+    's4暴鯉龍',
+    's4大鋼蛇',
+    'L雷公',
+    'L炎帝',
+    'L水君',
+  ],
+
+  // 3-star
+  [
+    's3妙蛙花',
+    's3噴火龍',
+    's3水箭龜',
+    's3伊布',
+    's3帝牙海獅',
+    's3大比鳥',
+    's3堅果啞鈴',
+    's3雙斧戰龍',
+    's3尼多后',
+    's3尼多王',
+    's3水伊布',
+    's3雷伊布',
+    's3火伊布',
+    's3皮卡丘',
+    's3暴飛龍',
+    's3爆焰龜獸',
+    's3暴鯉龍',
+    's3大鋼蛇',
+    'L謎擬Q',
+  ],
+];
+
 void main() {
   runApp(const MyApp());
 }
 
-class MyAppState extends ChangeNotifier {}
+class MyAppState extends ChangeNotifier {
+  List<List<bool>> marked = [
+    for (final disks in markables)
+      [
+        for (final _ in disks) false,
+      ],
+  ];
+
+  void setMarked(int i, int j, bool marked) {
+    this.marked[i][j] = marked;
+    notifyListeners();
+  }
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -502,26 +578,31 @@ class _MyHomePageState extends State<MyHomePage> {
           NavigationDestination(icon: Icon(Icons.draw), label: '標記'),
         ],
       ),
-      body: const TablePage(),
+      body: _currentPageIndex == 0 ? const TablePage() : const MarkPage(),
     );
   }
 }
 
 class TablePage extends StatelessWidget {
-  const TablePage({
-    super.key,
-  });
+  const TablePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-
+    var markedDisks = <String>{};
+    for (int i = 0; i < markables.length; ++i) {
+      for (int j = 0; j < markables[i].length; ++j) {
+        if (appState.marked[i][j]) {
+          markedDisks.add(markables[i][j]);
+        }
+      }
+    }
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          columnSpacing: 28.0,
+          columnSpacing: 16.0,
           dataRowMinHeight: 0.0,
           dataRowMaxHeight: 32.0,
           columns: [
@@ -545,11 +626,75 @@ class TablePage extends StatelessWidget {
               DataRow(cells: [
                 DataCell(Text('${i + 1}')),
                 for (int j = 0; j < diskOrders.length; ++j)
-                  DataCell(Text(diskOrders[j][i])),
+                  DataCell(
+                    SizedBox.expand(
+                      child: Container(
+                        alignment: AlignmentDirectional.centerStart,
+                        padding: const EdgeInsets.all(4.0),
+                        color: markedDisks.contains(diskOrders[j][i])
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                        child: Text(
+                          diskOrders[j][i],
+                          style: markedDisks.contains(diskOrders[j][i])
+                              ? TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
               ]),
           ],
         ),
       ),
+    );
+  }
+}
+
+class MarkPage extends StatelessWidget {
+  const MarkPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    return ListView(
+      children: [
+        for (int i = 0; i < markables.length; ++i) ...[
+          const Divider(),
+          GridView.extent(
+            maxCrossAxisExtent: 150.0,
+            childAspectRatio: 2,
+            padding: const EdgeInsets.all(8.0),
+            mainAxisSpacing: 8.0,
+            crossAxisSpacing: 8.0,
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            children: [
+              for (int j = 0; j < markables[i].length; ++j)
+                if (appState.marked[i][j])
+                  FilledButton(
+                    onPressed: () =>
+                        appState.setMarked(i, j, !appState.marked[i][j]),
+                    child: Text(
+                      markables[i][j],
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  )
+                else
+                  OutlinedButton(
+                    onPressed: () =>
+                        appState.setMarked(i, j, !appState.marked[i][j]),
+                    child: Text(markables[i][j]),
+                  ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
