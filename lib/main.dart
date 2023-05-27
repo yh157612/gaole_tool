@@ -489,15 +489,15 @@ void main() {
 }
 
 class MyAppState extends ChangeNotifier {
-  List<List<bool>> marked = [
+  List<List<int>> marked = [
     for (final disks in markables)
       [
-        for (final _ in disks) false,
+        for (final _ in disks) 0,
       ],
   ];
 
-  void setMarked(int i, int j, bool marked) {
-    this.marked[i][j] = marked;
+  void setMarked(int i, int j, int value) {
+    marked[i][j] = value;
     notifyListeners();
   }
 }
@@ -603,14 +603,28 @@ class _TablePageState extends State<TablePage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var markedDisks = <String>{};
+    var markedDisks = <String, int>{};
     for (int i = 0; i < markables.length; ++i) {
       for (int j = 0; j < markables[i].length; ++j) {
-        if (appState.marked[i][j]) {
-          markedDisks.add(markables[i][j]);
+        if (appState.marked[i][j] > 0) {
+          markedDisks[markables[i][j]] = appState.marked[i][j];
         }
       }
     }
+
+    final markColors = [
+      null,
+      Theme.of(context).colorScheme.primary,
+      Theme.of(context).colorScheme.secondary,
+      Theme.of(context).colorScheme.tertiary,
+    ];
+    final markTextColors = [
+      null,
+      Theme.of(context).colorScheme.onPrimary,
+      Theme.of(context).colorScheme.onSecondary,
+      Theme.of(context).colorScheme.onTertiary,
+    ];
+
     return InteractiveViewer(
       constrained: false,
       boundaryMargin: const EdgeInsets.all(1000.0),
@@ -646,14 +660,13 @@ class _TablePageState extends State<TablePage> {
                     child: Container(
                       alignment: AlignmentDirectional.centerStart,
                       padding: const EdgeInsets.all(4.0),
-                      color: markedDisks.contains(diskOrders[j][i])
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
+                      color: markColors[markedDisks[diskOrders[j][i]] ?? 0],
                       child: Text(
                         diskOrders[j][i],
-                        style: markedDisks.contains(diskOrders[j][i])
+                        style: markedDisks.containsKey(diskOrders[j][i])
                             ? TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
+                                color: markTextColors[
+                                    markedDisks[diskOrders[j][i]] ?? 0],
                                 fontWeight: FontWeight.bold,
                               )
                             : null,
@@ -675,6 +688,19 @@ class MarkPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
 
+    final markColors = [
+      null,
+      Theme.of(context).colorScheme.primary,
+      Theme.of(context).colorScheme.secondary,
+      Theme.of(context).colorScheme.tertiary,
+    ];
+    final markTextColors = [
+      null,
+      Theme.of(context).colorScheme.onPrimary,
+      Theme.of(context).colorScheme.onSecondary,
+      Theme.of(context).colorScheme.onTertiary,
+    ];
+
     return ListView(
       children: [
         for (int i = 0; i < markables.length; ++i) ...[
@@ -689,10 +715,14 @@ class MarkPage extends StatelessWidget {
             shrinkWrap: true,
             children: [
               for (int j = 0; j < markables[i].length; ++j)
-                if (appState.marked[i][j])
+                if (appState.marked[i][j] > 0)
                   FilledButton(
-                    onPressed: () =>
-                        appState.setMarked(i, j, !appState.marked[i][j]),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: markColors[appState.marked[i][j]],
+                      foregroundColor: markTextColors[appState.marked[i][j]],
+                    ),
+                    onPressed: () => appState.setMarked(
+                        i, j, (appState.marked[i][j] + 1) % 4),
                     child: Text(
                       markables[i][j],
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -700,8 +730,8 @@ class MarkPage extends StatelessWidget {
                   )
                 else
                   OutlinedButton(
-                    onPressed: () =>
-                        appState.setMarked(i, j, !appState.marked[i][j]),
+                    onPressed: () => appState.setMarked(
+                        i, j, (appState.marked[i][j] + 1) % 4),
                     child: Text(markables[i][j]),
                   ),
             ],
