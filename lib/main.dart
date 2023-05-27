@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 const diskOrders = [
   [
@@ -423,41 +424,46 @@ void main() {
   runApp(const MyApp());
 }
 
+class MyAppState extends ChangeNotifier {}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
+    return ChangeNotifierProvider(
+      create: (context) => MyAppState(),
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          // This is the theme of your application.
+          //
+          // TRY THIS: Try running your application with "flutter run". You'll see
+          // the application has a blue toolbar. Then, without quitting the app,
+          // try changing the seedColor in the colorScheme below to Colors.green
+          // and then invoke "hot reload" (save your changes or press the "hot
+          // reload" button in a Flutter-supported IDE, or press "r" if you used
+          // the command line to start the app).
+          //
+          // Notice that the counter didn't reset back to zero; the application
+          // state is not lost during the reload. To reset the state, use hot
+          // restart instead.
+          //
+          // This works for code too, not just values: Most code changes can be
+          // tested with just a hot reload.
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
         ),
-        useMaterial3: true,
+        darkTheme: ThemeData.from(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple,
+            brightness: Brightness.dark,
+          ),
+          useMaterial3: true,
+        ),
+        home: const MyHomePage(),
       ),
-      home: const MyHomePage(),
     );
   }
 }
@@ -496,39 +502,52 @@ class _MyHomePageState extends State<MyHomePage> {
           NavigationDestination(icon: Icon(Icons.draw), label: '標記'),
         ],
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 28.0,
-            dataRowMinHeight: 0.0,
-            dataRowMaxHeight: 32.0,
-            columns: [
-              const DataColumn(
-                label: Text(
-                  '#',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                numeric: true,
+      body: const TablePage(),
+    );
+  }
+}
+
+class TablePage extends StatelessWidget {
+  const TablePage({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          columnSpacing: 28.0,
+          dataRowMinHeight: 0.0,
+          dataRowMaxHeight: 32.0,
+          columns: [
+            const DataColumn(
+              label: Text(
+                '#',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              for (int i = 0; i < diskOrders.length; ++i)
-                DataColumn(
-                  label: Text(
-                    String.fromCharCode('A'.runes.single + i),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+              numeric: true,
+            ),
+            for (int i = 0; i < diskOrders.length; ++i)
+              DataColumn(
+                label: Text(
+                  String.fromCharCode('A'.runes.single + i),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-            ],
-            rows: [
-              for (int i = 0; i < diskOrders[0].length; ++i)
-                DataRow(cells: [
-                  DataCell(Text('${i + 1}')),
-                  for (int j = 0; j < diskOrders.length; ++j)
-                    DataCell(Text(diskOrders[j][i])),
-                ]),
-            ],
-          ),
+              ),
+          ],
+          rows: [
+            for (int i = 0; i < diskOrders[0].length; ++i)
+              DataRow(cells: [
+                DataCell(Text('${i + 1}')),
+                for (int j = 0; j < diskOrders.length; ++j)
+                  DataCell(Text(diskOrders[j][i])),
+              ]),
+          ],
         ),
       ),
     );
