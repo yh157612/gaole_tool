@@ -578,13 +578,27 @@ class _MyHomePageState extends State<MyHomePage> {
           NavigationDestination(icon: Icon(Icons.draw), label: '標記'),
         ],
       ),
-      body: _currentPageIndex == 0 ? const TablePage() : const MarkPage(),
+      body: IndexedStack(
+        index: _currentPageIndex,
+        children: const [
+          TablePage(),
+          MarkPage(),
+        ],
+      ),
     );
   }
 }
 
-class TablePage extends StatelessWidget {
+class TablePage extends StatefulWidget {
   const TablePage({super.key});
+
+  @override
+  State<TablePage> createState() => _TablePageState();
+}
+
+class _TablePageState extends State<TablePage> {
+  final _transformationController =
+      TransformationController(Matrix4.identity().scaled(0.5));
 
   @override
   Widget build(BuildContext context) {
@@ -597,59 +611,58 @@ class TablePage extends StatelessWidget {
         }
       }
     }
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columnSpacing: 16.0,
-          dataRowMinHeight: 0.0,
-          dataRowMaxHeight: 32.0,
-          columns: [
-            const DataColumn(
-              label: Text(
-                '#',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              numeric: true,
+    return InteractiveViewer(
+      constrained: false,
+      boundaryMargin: const EdgeInsets.all(1000.0),
+      minScale: 0.25,
+      transformationController: _transformationController,
+      child: DataTable(
+        columnSpacing: 16.0,
+        dataRowMinHeight: 0.0,
+        dataRowMaxHeight: 32.0,
+        columns: [
+          const DataColumn(
+            label: Text(
+              '#',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            for (int i = 0; i < diskOrders.length; ++i)
-              DataColumn(
-                label: Text(
-                  String.fromCharCode('A'.runes.single + i),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+            numeric: true,
+          ),
+          for (int i = 0; i < diskOrders.length; ++i)
+            DataColumn(
+              label: Text(
+                String.fromCharCode('A'.runes.single + i),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-          ],
-          rows: [
-            for (int i = 0; i < diskOrders[0].length; ++i)
-              DataRow(cells: [
-                DataCell(Text('${i + 1}')),
-                for (int j = 0; j < diskOrders.length; ++j)
-                  DataCell(
-                    SizedBox.expand(
-                      child: Container(
-                        alignment: AlignmentDirectional.centerStart,
-                        padding: const EdgeInsets.all(4.0),
-                        color: markedDisks.contains(diskOrders[j][i])
-                            ? Theme.of(context).colorScheme.primary
+            ),
+        ],
+        rows: [
+          for (int i = 0; i < diskOrders[0].length; ++i)
+            DataRow(cells: [
+              DataCell(Text('${i + 1}')),
+              for (int j = 0; j < diskOrders.length; ++j)
+                DataCell(
+                  SizedBox.expand(
+                    child: Container(
+                      alignment: AlignmentDirectional.centerStart,
+                      padding: const EdgeInsets.all(4.0),
+                      color: markedDisks.contains(diskOrders[j][i])
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
+                      child: Text(
+                        diskOrders[j][i],
+                        style: markedDisks.contains(diskOrders[j][i])
+                            ? TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                              )
                             : null,
-                        child: Text(
-                          diskOrders[j][i],
-                          style: markedDisks.contains(diskOrders[j][i])
-                              ? TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  fontWeight: FontWeight.bold,
-                                )
-                              : null,
-                        ),
                       ),
                     ),
                   ),
-              ]),
-          ],
-        ),
+                ),
+            ]),
+        ],
       ),
     );
   }
