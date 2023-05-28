@@ -484,6 +484,24 @@ const markables = [
   ],
 ];
 
+const purpleFiveStars = {
+  '超夢',
+  '拉帝亞斯',
+  '拉帝歐斯',
+  '達克萊伊',
+  '基格爾德',
+  '索爾迦雷歐',
+  '露奈雅拉',
+  '惡食大王',
+  '四顎針龍',
+};
+
+const redFiveStars = {
+  'L噴火龍',
+  'L阿爾宙斯',
+  'L甲賀忍蛙',
+};
+
 void main() {
   runApp(const MyApp());
 }
@@ -660,7 +678,20 @@ class _TablePageState extends State<TablePage> {
                     child: Container(
                       alignment: AlignmentDirectional.centerStart,
                       padding: const EdgeInsets.all(4.0),
-                      color: markColors[markedDisks[diskOrders[j][i]] ?? 0],
+                      decoration: BoxDecoration(
+                        color: markColors[markedDisks[diskOrders[j][i]] ?? 0],
+                        border: purpleFiveStars.contains(diskOrders[j][i])
+                            ? Border.all(
+                                color: Colors.purpleAccent,
+                                width: 2.0,
+                              )
+                            : redFiveStars.contains(diskOrders[j][i])
+                                ? Border.all(
+                                    color: Colors.red,
+                                    width: 2.0,
+                                  )
+                                : null,
+                      ),
                       child: Text(
                         diskOrders[j][i],
                         style: markedDisks.containsKey(diskOrders[j][i])
