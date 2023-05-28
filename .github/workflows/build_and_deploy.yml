@@ -32,7 +32,7 @@ jobs:
         id: pages
         uses: actions/configure-pages@v3
       - name: Build
-        run: flutter build web --base-href /gaole_tool/
+        run: flutter build web --base-href /gaole_tool/ --web-renderer canvaskit
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
