@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zoom_widget/zoom_widget.dart';
 
 const diskOrders = [
   [
@@ -615,9 +616,6 @@ class TablePage extends StatefulWidget {
 }
 
 class _TablePageState extends State<TablePage> {
-  final _transformationController =
-      TransformationController(Matrix4.identity().scaled(0.5));
-
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -643,70 +641,71 @@ class _TablePageState extends State<TablePage> {
       Theme.of(context).colorScheme.onTertiary,
     ];
 
-    return InteractiveViewer(
-      constrained: false,
-      boundaryMargin: const EdgeInsets.all(1000.0),
-      minScale: 0.25,
-      transformationController: _transformationController,
-      child: DataTable(
-        columnSpacing: 16.0,
-        dataRowMinHeight: 0.0,
-        dataRowMaxHeight: 32.0,
-        columns: [
-          const DataColumn(
-            label: Text(
-              '#',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            numeric: true,
-          ),
-          for (int i = 0; i < diskOrders.length; ++i)
-            DataColumn(
+    return Zoom(
+      backgroundColor: Colors.transparent,
+      canvasColor: Colors.transparent,
+      initTotalZoomOut: true,
+      child: SizeChangedLayoutNotifier(
+        child: DataTable(
+          columnSpacing: 16.0,
+          dataRowMinHeight: 0.0,
+          dataRowMaxHeight: 32.0,
+          columns: [
+            const DataColumn(
               label: Text(
-                String.fromCharCode('A'.runes.single + i),
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                '#',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
+              numeric: true,
             ),
-        ],
-        rows: [
-          for (int i = 0; i < diskOrders[0].length; ++i)
-            DataRow(cells: [
-              DataCell(Text('${i + 1}')),
-              for (int j = 0; j < diskOrders.length; ++j)
-                DataCell(
-                  SizedBox.expand(
-                    child: Container(
-                      alignment: AlignmentDirectional.centerStart,
-                      padding: const EdgeInsets.all(4.0),
-                      decoration: BoxDecoration(
-                        color: markColors[markedDisks[diskOrders[j][i]] ?? 0],
-                        border: purpleFiveStars.contains(diskOrders[j][i])
-                            ? Border.all(
-                                color: Colors.purpleAccent,
-                                width: 2.0,
-                              )
-                            : redFiveStars.contains(diskOrders[j][i])
-                                ? Border.all(
-                                    color: Colors.red,
-                                    width: 2.0,
-                                  )
-                                : null,
-                      ),
-                      child: Text(
-                        diskOrders[j][i],
-                        style: markedDisks.containsKey(diskOrders[j][i])
-                            ? TextStyle(
-                                color: markTextColors[
-                                    markedDisks[diskOrders[j][i]] ?? 0],
-                                fontWeight: FontWeight.bold,
-                              )
-                            : null,
+            for (int i = 0; i < diskOrders.length; ++i)
+              DataColumn(
+                label: Text(
+                  String.fromCharCode('A'.runes.single + i),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+          ],
+          rows: [
+            for (int i = 0; i < diskOrders[0].length; ++i)
+              DataRow(cells: [
+                DataCell(Text('${i + 1}')),
+                for (int j = 0; j < diskOrders.length; ++j)
+                  DataCell(
+                    SizedBox.expand(
+                      child: Container(
+                        alignment: AlignmentDirectional.centerStart,
+                        padding: const EdgeInsets.all(4.0),
+                        decoration: BoxDecoration(
+                          color: markColors[markedDisks[diskOrders[j][i]] ?? 0],
+                          border: purpleFiveStars.contains(diskOrders[j][i])
+                              ? Border.all(
+                                  color: Colors.purpleAccent,
+                                  width: 2.0,
+                                )
+                              : redFiveStars.contains(diskOrders[j][i])
+                                  ? Border.all(
+                                      color: Colors.red,
+                                      width: 2.0,
+                                    )
+                                  : null,
+                        ),
+                        child: Text(
+                          diskOrders[j][i],
+                          style: markedDisks.containsKey(diskOrders[j][i])
+                              ? TextStyle(
+                                  color: markTextColors[
+                                      markedDisks[diskOrders[j][i]] ?? 0],
+                                  fontWeight: FontWeight.bold,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
                   ),
-                ),
-            ]),
-        ],
+              ]),
+          ],
+        ),
       ),
     );
   }
