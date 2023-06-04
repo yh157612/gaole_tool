@@ -505,6 +505,13 @@ const redFiveStars = {
 
 const numWorkspaces = 3;
 
+const markColors = [
+  null,
+  Colors.yellowAccent,
+  Colors.lightGreenAccent,
+  Colors.cyanAccent,
+];
+
 void main() {
   runApp(const MyApp());
 }
@@ -689,19 +696,6 @@ class _TablePageState extends State<TablePage> {
       }
     }
 
-    final markColors = [
-      null,
-      Theme.of(context).colorScheme.primary,
-      Theme.of(context).colorScheme.secondary,
-      Theme.of(context).colorScheme.tertiary,
-    ];
-    final markTextColors = [
-      null,
-      Theme.of(context).colorScheme.onPrimary,
-      Theme.of(context).colorScheme.onSecondary,
-      Theme.of(context).colorScheme.onTertiary,
-    ];
-
     return Zoom(
       backgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
@@ -754,9 +748,8 @@ class _TablePageState extends State<TablePage> {
                         child: Text(
                           diskOrders[j][i],
                           style: markedDisks.containsKey(diskOrders[j][i])
-                              ? TextStyle(
-                                  color: markTextColors[
-                                      markedDisks[diskOrders[j][i]] ?? 0],
+                              ? const TextStyle(
+                                  color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                 )
                               : null,
@@ -780,19 +773,6 @@ class MarkPage extends StatelessWidget {
     var appState = context.watch<MyAppState>();
     final marked = appState.getMarked();
 
-    final markColors = [
-      null,
-      Theme.of(context).colorScheme.primary,
-      Theme.of(context).colorScheme.secondary,
-      Theme.of(context).colorScheme.tertiary,
-    ];
-    final markTextColors = [
-      null,
-      Theme.of(context).colorScheme.onPrimary,
-      Theme.of(context).colorScheme.onSecondary,
-      Theme.of(context).colorScheme.onTertiary,
-    ];
-
     return ListView(
       children: [
         for (int i = 0; i < markables.length; ++i) ...[
@@ -811,7 +791,7 @@ class MarkPage extends StatelessWidget {
                   FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: markColors[marked[i][j]],
-                      foregroundColor: markTextColors[marked[i][j]],
+                      foregroundColor: Colors.black,
                     ),
                     onPressed: () =>
                         appState.setMarked(i, j, (marked[i][j] + 1) % 4),
