@@ -503,20 +503,46 @@ const redFiveStars = {
   'L甲賀忍蛙',
 };
 
+const numWorkspaces = 3;
+
 void main() {
   runApp(const MyApp());
 }
 
 class MyAppState extends ChangeNotifier {
-  List<List<int>> marked = [
-    for (final disks in markables)
+  int currentWorkspaceIndex = 0;
+
+  final _marked = [
+    for (int i = 0; i < numWorkspaces; ++i)
       [
-        for (final _ in disks) 0,
+        for (final disks in markables)
+          [
+            for (final _ in disks) 0,
+          ],
       ],
   ];
 
+  List<List<int>> getMarked() {
+    return _marked[currentWorkspaceIndex];
+  }
+
   void setMarked(int i, int j, int value) {
-    marked[i][j] = value;
+    _marked[currentWorkspaceIndex][i][j] = value;
+    notifyListeners();
+  }
+
+  void clearMarked() {
+    _marked[currentWorkspaceIndex] = [
+      for (final disks in markables)
+        [
+          for (final _ in disks) 0,
+        ],
+    ];
+    notifyListeners();
+  }
+
+  void setWorkspaceIndex(int workspaceIndex) {
+    currentWorkspaceIndex = workspaceIndex;
     notifyListeners();
   }
 }
@@ -586,16 +612,50 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
     return Scaffold(
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (index) => setState(() {
-          _currentPageIndex = index;
-        }),
-        selectedIndex: _currentPageIndex,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.list_alt), label: '卡序表'),
-          NavigationDestination(icon: Icon(Icons.draw), label: '標記'),
-        ],
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          children: [
+            for (int i = 0; i < numWorkspaces; ++i)
+              if (i == appState.currentWorkspaceIndex)
+                FilledButton.tonal(
+                  onPressed: () => setState(() {
+                    appState.setWorkspaceIndex(i);
+                  }),
+                  child: Text("${i + 1}"),
+                )
+              else
+                TextButton(
+                  onPressed: () => setState(() {
+                    appState.setWorkspaceIndex(i);
+                  }),
+                  child: Text("${i + 1}"),
+                ),
+            Expanded(child: Container()),
+            if (_currentPageIndex == 0)
+              TextButton.icon(
+                onPressed: () => setState(() {
+                  _currentPageIndex = 1;
+                }),
+                icon: const Icon(Icons.draw),
+                label: const Text("標記"),
+              )
+            else
+              TextButton.icon(
+                onPressed: () => setState(() {
+                  _currentPageIndex = 0;
+                }),
+                icon: const Icon(Icons.list_alt),
+                label: const Text("卡序表"),
+              ),
+            IconButton(
+              onPressed: () => appState.clearMarked(),
+              icon: const Icon(Icons.format_color_reset),
+              tooltip: "清空",
+            )
+          ],
+        ),
       ),
       body: IndexedStack(
         index: _currentPageIndex,
@@ -618,12 +678,13 @@ class TablePage extends StatefulWidget {
 class _TablePageState extends State<TablePage> {
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
+    final appState = context.watch<MyAppState>();
+    final marked = appState.getMarked();
     var markedDisks = <String, int>{};
     for (int i = 0; i < markables.length; ++i) {
       for (int j = 0; j < markables[i].length; ++j) {
-        if (appState.marked[i][j] > 0) {
-          markedDisks[markables[i][j]] = appState.marked[i][j];
+        if (marked[i][j] > 0) {
+          markedDisks[markables[i][j]] = marked[i][j];
         }
       }
     }
@@ -717,6 +778,7 @@ class MarkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
+    final marked = appState.getMarked();
 
     final markColors = [
       null,
@@ -745,14 +807,14 @@ class MarkPage extends StatelessWidget {
             shrinkWrap: true,
             children: [
               for (int j = 0; j < markables[i].length; ++j)
-                if (appState.marked[i][j] > 0)
+                if (marked[i][j] > 0)
                   FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor: markColors[appState.marked[i][j]],
-                      foregroundColor: markTextColors[appState.marked[i][j]],
+                      backgroundColor: markColors[marked[i][j]],
+                      foregroundColor: markTextColors[marked[i][j]],
                     ),
-                    onPressed: () => appState.setMarked(
-                        i, j, (appState.marked[i][j] + 1) % 4),
+                    onPressed: () =>
+                        appState.setMarked(i, j, (marked[i][j] + 1) % 4),
                     child: Text(
                       markables[i][j],
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -760,8 +822,8 @@ class MarkPage extends StatelessWidget {
                   )
                 else
                   OutlinedButton(
-                    onPressed: () => appState.setMarked(
-                        i, j, (appState.marked[i][j] + 1) % 4),
+                    onPressed: () =>
+                        appState.setMarked(i, j, (marked[i][j] + 1) % 4),
                     child: Text(markables[i][j]),
                   ),
             ],
